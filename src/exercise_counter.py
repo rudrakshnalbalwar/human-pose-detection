@@ -24,3 +24,31 @@ class SquatCounter:
             self.counter += 1
             
         return self.counter
+
+class ArmRepCounter:
+    def __init__(self):
+        self.counter = 0
+        self.position = "down"  # start with arm down
+        self.threshold = 0.15  # adjust based on testing
+        
+    def count_rep(self, landmarks):
+        if not landmarks:
+            return self.counter
+            
+        # Get wrist and shoulder positions (using right arm)
+        shoulder = landmarks.landmark[12]  # right shoulder
+        elbow = landmarks.landmark[14]    # right elbow
+        wrist = landmarks.landmark[16]    # right wrist
+        
+        # Calculate vertical distance between wrist and shoulder
+        wrist_shoulder_dist = shoulder.y - wrist.y
+        
+        # State machine for counting
+        if self.position == "down" and wrist_shoulder_dist > self.threshold:
+            self.position = "up"
+        elif self.position == "up" and wrist_shoulder_dist < 0:
+            # When wrist goes below shoulder level, count as complete rep
+            self.position = "down"
+            self.counter += 1
+            
+        return self.counter
